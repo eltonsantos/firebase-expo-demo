@@ -5,9 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "firebaseexpodemo",
+    "scheme": "firebase-expo-demo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "googleWebClientId": "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -38,7 +41,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
