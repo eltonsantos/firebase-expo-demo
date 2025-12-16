@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
-      "googleWebClientId": "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com"
+      "googleWebClientId": "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
+      "router": {},
+      "eas": {
+        "projectId": "038e175d-deff-410a-9843-55379ad481b5"
+      }
     },
     "ios": {
       "supportsTablet": true
@@ -22,7 +26,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.eltonsantos.firebaseexpodemo"
     },
     "web": {
       "output": "static",

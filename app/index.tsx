@@ -27,7 +27,7 @@ export default function Home() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
     iosClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
-    androidClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
+    androidClientId: "253411340512-h4mbc0colo4t7kkoniqjdeuml90v5294.apps.googleusercontent.com",
     redirectUri,
   });
 
