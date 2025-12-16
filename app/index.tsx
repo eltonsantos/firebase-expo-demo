@@ -9,7 +9,7 @@ import { auth } from "../src/firebase";
 // Configurar Google Sign-In (apenas para mobile)
 if (Platform.OS !== "web") {
   GoogleSignin.configure({
-    webClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
+    webClientId: "576772893511-bc98kjl0vmc32edkaq1qmno27iha60ep.apps.googleusercontent.com",
   });
 }
 
