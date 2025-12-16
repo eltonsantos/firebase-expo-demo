@@ -1,35 +1,22 @@
-import { makeRedirectUri } from "expo-auth-session";
-import * as Google from "expo-auth-session/providers/google";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { GoogleAuthProvider, signInWithCredential, signInWithPopup } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../src/auth";
 import { auth } from "../src/firebase";
 
-// Necessário para completar o fluxo de auth no navegador (mobile)
-WebBrowser.maybeCompleteAuthSession();
+// Configurar Google Sign-In (apenas para mobile)
+if (Platform.OS !== "web") {
+  GoogleSignin.configure({
+    webClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
+  });
+}
 
 export default function Home() {
   const { user, initializing } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Configuração para mobile (Expo Go)
-  const redirectUri = makeRedirectUri({
-    scheme: "firebase-expo-demo",
-  });
-
-  console.log("Platform:", Platform.OS);
-  console.log("Redirect URI:", redirectUri);
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
-    iosClientId: "253411340512-rs6n3c7f24t3vv5ohfe5kl6v39f6usse.apps.googleusercontent.com",
-    androidClientId: "253411340512-h4mbc0colo4t7kkoniqjdeuml90v5294.apps.googleusercontent.com",
-    redirectUri,
-  });
 
   useEffect(() => {
     // Se já estiver logado, redireciona para Admin
@@ -37,32 +24,6 @@ export default function Home() {
       router.replace("/admin");
     }
   }, [user, initializing]);
-
-  // Handler para resposta do OAuth mobile
-  useEffect(() => {
-    (async () => {
-      if (response?.type !== "success") return;
-
-      const { id_token } = response.params;
-      
-      if (!id_token) {
-        setError("Não foi possível obter o token de autenticação");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const credential = GoogleAuthProvider.credential(id_token);
-        await signInWithCredential(auth, credential);
-        router.replace("/admin");
-      } catch (err) {
-        console.error("Erro ao fazer login:", err);
-        setError("Erro ao fazer login com Google");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [response]);
 
   // Login para WEB - usa popup do Firebase diretamente
   const handleWebLogin = async () => {
@@ -88,10 +49,48 @@ export default function Home() {
     }
   };
 
-  // Login para MOBILE - usa expo-auth-session
-  const handleMobileLogin = () => {
-    setError(null);
-    promptAsync();
+  // Login para MOBILE - usa biblioteca nativa Google Sign-In
+  const handleMobileLogin = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Verifica se o Google Play Services está disponível
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+      // Faz o login com Google
+      const signInResult = await GoogleSignin.signIn();
+
+      // Obtém o idToken
+      const idToken = signInResult.data?.idToken;
+
+      if (!idToken) {
+        throw new Error("Não foi possível obter o token de autenticação");
+      }
+
+      console.log("Google Sign-In success, idToken obtained");
+
+      // Autentica no Firebase com o token do Google
+      const credential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(auth, credential);
+
+      console.log("Firebase auth success");
+      router.replace("/admin");
+    } catch (err: any) {
+      console.error("Erro no login mobile:", err);
+
+      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+        setError("Login cancelado");
+      } else if (err.code === statusCodes.IN_PROGRESS) {
+        setError("Login já em andamento");
+      } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        setError("Google Play Services não disponível");
+      } else {
+        setError("Erro ao fazer login: " + err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (initializing || loading) {
@@ -117,12 +116,10 @@ export default function Home() {
       )}
 
       <Pressable
-        disabled={Platform.OS !== "web" && !request}
         onPress={Platform.OS === "web" ? handleWebLogin : handleMobileLogin}
         style={({ pressed }) => [
           styles.button,
           pressed && { opacity: 0.7 },
-          (Platform.OS !== "web" && !request) && { opacity: 0.5 },
         ]}
       >
         <Text style={styles.buttonText}>Entrar com Google</Text>
@@ -131,7 +128,7 @@ export default function Home() {
       <Text style={styles.hint}>
         {Platform.OS === "web" 
           ? "Testando na Web" 
-          : "Usando Expo Go no celular"}
+          : "Android - Login Nativo"}
       </Text>
     </View>
   );
